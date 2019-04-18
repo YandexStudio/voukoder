@@ -215,5 +215,4 @@ private:
 	csSDK_uint32 pluginId;
 	csSDK_int32 paramVersion;
 	PrSuites *suites;
-	Voukoder voukoder;
 };

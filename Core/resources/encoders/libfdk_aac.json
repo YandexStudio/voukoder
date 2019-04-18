@@ -3,7 +3,7 @@
   "id": "libfdk_aac",
   "name": "AAC (Fraunhofer)",
   "defaults": {
-    "_sampleFormat": "s16p"
+    "_sampleFormat": "s16"
   },
   "groups": [
     {
@@ -12,12 +12,14 @@
       "properties": [
         {
           "id": "libfdk_aac.standard.strategy",
+          "parameter": "_strategy",
           "forced": true,
           "control": {
             "type": "combobox",
             "selectedIndex": 0,
             "items": [
               {
+                "value": "cbr",
                 "filters": [
                   {
                     "filter": "OnSelection",
@@ -37,6 +39,7 @@
                 ]
               },
               {
+                "value": "vbr",
                 "filters": [
                   {
                     "filter": "OnSelection",

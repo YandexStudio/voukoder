@@ -1,6 +1,7 @@
 #include "Gui.h"
 #include <wx/wx.h>
-#include <Translation.h>
+#include <LanguageUtils.h>
+#include <Log.h>
 
 class actctx_activator
 {
@@ -48,7 +49,7 @@ Gui::Gui(PrSuites *suites, csSDK_uint32 pluginId) :
 	suites(suites),
 	pluginId(pluginId)
 {
-	voukoder.Init();
+	Voukoder::Config::Get();
 }
 
 prMALError Gui::Create()
@@ -75,6 +76,13 @@ prMALError Gui::Create()
 	infoSuite->GetExportSourceInfo(pluginId, kExportInfo_VideoFieldType, &seqFieldOrder);
 	infoSuite->GetExportSourceInfo(pluginId, kExportInfo_AudioSampleRate, &seqSampleRate);
 	infoSuite->GetExportSourceInfo(pluginId, kExportInfo_AudioChannelsType, &seqChannelType);
+
+	// Req'd for AME
+	if (seqWidth.mInt32 == 0)
+		seqWidth.mInt32 = 1920;
+
+	if (seqHeight.mInt32 == 0)
+		seqHeight.mInt32 = 1080;
 
 	// Create ADBE UI elements
 	prCreateIntParam(ADBEVideoCodec, ADBEBasicVideoGroup, exParamFlag_none, 0, NULL, NULL, kPrFalse, kPrTrue);
@@ -220,10 +228,9 @@ void Gui::CheckSettings()
 	ExportInfo exportInfo;
 	if (ReadEncoderOptions(VKDRVoukoderConfiguration, exportInfo))
 	{
-		const Configuration *config = voukoder.GetConfiguration();
-		muxer = Voukoder::GetResourceName(config->muxerInfos, exportInfo.format.id, none);
-		videoEncoder = Voukoder::GetResourceName(config->encoderInfos, exportInfo.video.id, none);
-		audioEncoder = Voukoder::GetResourceName(config->encoderInfos, exportInfo.audio.id, none);
+		muxer = Voukoder::GetResourceName(Voukoder::Config::Get().muxerInfos, exportInfo.format.id, none);
+		videoEncoder = Voukoder::GetResourceName(Voukoder::Config::Get().encoderInfos, exportInfo.video.id, none);
+		audioEncoder = Voukoder::GetResourceName(Voukoder::Config::Get().encoderInfos, exportInfo.audio.id, none);
 	}
 	else
 	{
@@ -238,9 +245,7 @@ void Gui::CheckSettings()
 
 prMALError Gui::GetSelectedFileExtension(prUTF16Char *extension)
 {
-	const Configuration *config = voukoder.GetConfiguration();
-
-	wxString muxerId = config->DefaultMuxer;
+	wxString muxerId = DefaultMuxer;
 
 	// Overwrite with selected muxer
 	ExportInfo exportInfo;
@@ -250,7 +255,7 @@ prMALError Gui::GetSelectedFileExtension(prUTF16Char *extension)
 	}
 
 	// Find muxer info
-	for (auto& muxer : config->muxerInfos)
+	for (auto& muxer : Voukoder::Config::Get().muxerInfos)
 	{
 		if (muxer.id == muxerId)
 		{
@@ -260,7 +265,7 @@ prMALError Gui::GetSelectedFileExtension(prUTF16Char *extension)
 		}
 	}
 
-	av_log(NULL, AV_LOG_WARNING, "[Gui::GetSelectedFileExtension] Unsupported format: %s\n", muxerId.c_str());
+	wxLogWarning("Unsupported format: %s", muxerId.c_str());
 
 	return malUnknownError;
 }
@@ -302,10 +307,10 @@ void Gui::OpenVoukoderConfigDialog(exParamButtonRec *paramButtonRecP)
 		parent.SetHWND((WXHWND)hwnd);
 		parent.AdoptAttributesFromHWND();
 		wxTopLevelWindows.Append(&parent);
-		
+	
 		// Create and launch configuration dialog.
 		wxVoukoderDialog dialog(&parent, exportInfo);
-		dialog.SetConfiguration(voukoder.GetConfiguration());
+		dialog.SetConfiguration();
 		result = dialog.ShowModal();
 
 		wxTopLevelWindows.DeleteObject(&parent);
@@ -337,7 +342,7 @@ bool Gui::ReadEncoderOptions(const char *dataId, ExportInfo &exportInfo)
 	// Read arb data size
 	if (PrSuiteErrorFailed(suites->exportParamSuite->GetArbData(pluginId, 0, dataId, &dataSize, NULL)))
 	{
-		av_log(NULL, AV_LOG_WARNING, "Unable to retrieve arb data from: %s\n", dataId);
+		vkLogError("Unable to retrieve arb data from: %s\n", dataId);
 		return false;
 	}
 
@@ -349,13 +354,13 @@ bool Gui::ReadEncoderOptions(const char *dataId, ExportInfo &exportInfo)
 		if (PrSuiteErrorSucceeded(suites->exportParamSuite->GetArbData(pluginId, 0, dataId, &dataSize, reinterpret_cast<void*>(&arbData))))
 		{
 			// Log configuration
-			av_log(NULL, AV_LOG_INFO, "Loading encoder configuration (vcodec: %ls, voptions: %ls, acodec: %ls, aoptions: %ls, format: %ls, faststart: %d)\n",
-				arbData.videoCodecId,
-				arbData.videoCodecOptions,
-				arbData.audioCodecId,
-				arbData.audioCodecOptions,
-				arbData.formatId,
-				arbData.faststart);
+			//vkLogInfo("Loading encoder configuration (vcodec: %ls, voptions: %ls, acodec: %ls, aoptions: %ls, format: %ls, faststart: %d)",
+			//	arbData.videoCodecId,
+			//	arbData.videoCodecOptions,
+			//	arbData.audioCodecId,
+			//	arbData.audioCodecOptions,
+			//	arbData.formatId,
+			//	arbData.faststart);
 
 			// Set main values
 			exportInfo.video.id = wxString(arbData.videoCodecId);
@@ -381,7 +386,7 @@ bool Gui::ReadEncoderOptions(const char *dataId, ExportInfo &exportInfo)
 		}
 		else
 		{
-			av_log(NULL, AV_LOG_ERROR, "Failed loading encoder configuration.\n");
+			vkLogError("Failed loading encoder configuration.");
 		}
 	}
 
@@ -399,13 +404,13 @@ bool Gui::StoreEncoderOptions(const char *dataId, ExportInfo exportInfo)
 	arbData.faststart = exportInfo.format.faststart;
 
 	// Log configuration
-	av_log(NULL, AV_LOG_INFO, "Storing encoder configuration (vcodec: %ls, voptions: %ls, acodec: %ls, aoptions: %ls, format: %ls, faststart: %d)\n", 
-		arbData.videoCodecId,
-		arbData.videoCodecOptions,
-		arbData.audioCodecId,
-		arbData.audioCodecOptions,
-		arbData.formatId,
-		arbData.faststart);
+	//vkLogInfo("Storing encoder configuration (vcodec: %ls, voptions: %ls, acodec: %ls, aoptions: %ls, format: %ls, faststart: %d)",
+	//	arbData.videoCodecId,
+	//	arbData.videoCodecOptions,
+	//	arbData.audioCodecId,
+	//	arbData.audioCodecOptions,
+	//	arbData.formatId,
+	//	arbData.faststart);
 
 	// Save the encoder settings
 	csSDK_int32 size = static_cast<csSDK_int32>(sizeof(ArbData));
@@ -414,7 +419,7 @@ bool Gui::StoreEncoderOptions(const char *dataId, ExportInfo exportInfo)
 	prSuiteError ret = suites->exportParamSuite->SetArbData(pluginId, 0, dataId, size, reinterpret_cast<void*>(&arbData)) == malNoError;
 	if (PrSuiteErrorFailed(ret))
 	{
-		av_log(NULL, AV_LOG_ERROR, "Storing encoder configuration failed!\n");
+		vkLogError("Storing encoder configuration failed!");
 		return false;
 	}
 
@@ -438,13 +443,13 @@ prMALError Gui::Validate()
 
 bool Gui::ClearEncoderOptions(const char *dataId)
 {
-	av_log(NULL, AV_LOG_INFO, "Clearing encoder configuration ...\n");
+	//vkLogInfo("Clearing encoder configuration ...");
 
 	// Clear encoder configuration
 	prSuiteError ret = suites->exportParamSuite->SetArbData(pluginId, 0, dataId, 0, NULL) == malNoError;
 	if (PrSuiteErrorFailed(ret))
 	{
-		av_log(NULL, AV_LOG_ERROR, "Clearing encoder configuration failed!\n");
+		vkLogError("Clearing encoder configuration failed!");
 		return false;
 	}
 
@@ -594,18 +599,18 @@ prMALError Gui::ReportMessage(wxString message, csSDK_uint32 type)
 
 	if (type == kEventTypeError)
 	{
-		av_log(NULL, AV_LOG_ERROR, "<Gui::ReportMessage> " + message);
+		vkLogError(message);
 
 		return exportReturn_ErrLastErrorSet;
 	}
 	else if (type == kEventTypeWarning)
 	{
-		av_log(NULL, AV_LOG_WARNING, "<Gui::ReportMessage> " + message);
+		vkLogWarn(message);
 
 		return exportReturn_ErrLastWarningSet;
 	}
 
-	av_log(NULL, AV_LOG_INFO, "<Gui::ReportMessage> " + message);
+	vkLogInfo(message);
 
 	return exportReturn_ErrLastInfoSet;
 }

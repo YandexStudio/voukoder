@@ -1,16 +1,23 @@
 ﻿#include "EncoderEngine.h"
 #include "windows.h"
 #include <sstream>
+#include "Log.h"
 
 EncoderEngine::EncoderEngine(ExportInfo encoderInfo) :
 	exportInfo(encoderInfo)
 {
 	packet = av_packet_alloc();
+
+	passLogFile = wxFileName::CreateTempFileName("voukoder", (wxFile*)NULL);
 }
 
 EncoderEngine::~EncoderEngine()
 {
 	av_packet_free(&packet);
+
+	// Remove temporary files
+	wxRemoveFile(passLogFile);
+	wxRemoveFile(passLogFile + ".cutree");
 }
 
 int EncoderEngine::open()
@@ -22,8 +29,15 @@ int EncoderEngine::open()
 
 	// Mark myself as encoding tool in the mp4/mov container
 	av_dict_set(&formatContext->metadata, "encoding_tool", exportInfo.application.c_str(), 0);
+	// MOV
+	// MKV
 
-	av_log(NULL, AV_LOG_INFO, "### ENCODER STARTED ###\n");
+	// Logging multi pass information
+	if (exportInfo.passes > 1)
+	{
+		vkLogInfo("Running pass #%d ...", pass);
+		vkLogInfo("Using pass logfile: %s", passLogFile);
+	}
 
 	int ret;
 
@@ -32,7 +46,7 @@ int EncoderEngine::open()
 	{
 		if ((ret = openCodec(exportInfo.video.id.ToStdString(), exportInfo.video.options.toString().ToStdString(), &videoContext, getCodecFlags(AVMEDIA_TYPE_VIDEO))) < 0)
 		{
-			av_log(NULL, AV_LOG_ERROR, "Unable to open video encoder: %s\n", exportInfo.video.id.c_str());
+			vkLogError("Unable to open video encoder: %s", exportInfo.video.id.c_str());
 			close();
 			return ret;
 		}
@@ -43,7 +57,7 @@ int EncoderEngine::open()
 	{
 		if ((ret = openCodec(exportInfo.audio.id.ToStdString(), exportInfo.audio.options.toString().ToStdString(), &audioContext, 0)) < 0)
 		{
-			av_log(NULL, AV_LOG_ERROR, "Unable to open audio encoder: %s\n", exportInfo.audio.id.c_str());
+			vkLogError("Unable to open audio encoder: %s", exportInfo.audio.id.c_str());
 			close();
 			return ret;
 		}
@@ -91,7 +105,7 @@ int EncoderEngine::open()
 	ret = avio_open(&formatContext->pb, filename.c_str(), AVIO_FLAG_WRITE);
 	if (ret < 0)
 	{
-		av_log(NULL, AV_LOG_ERROR, "Unable to open file buffer\n");
+		vkLogError("Unable to open file buffer.");
 		return ret;
 	}
 
@@ -107,27 +121,37 @@ int EncoderEngine::openCodec(const string codecId, const string codecOptions, En
 
 	if ((ret = createCodecContext(codecId, encoderContext, flags)) == 0)
 	{
-		av_log(NULL, AV_LOG_INFO, "Opening codec: %s with options: %s\n", codecId.c_str(), codecOptions.c_str());
+		vkLogInfo("Opening codec: %s with options: %s", codecId.c_str(), codecOptions.c_str());
 
 		AVDictionary *dictionary = NULL;
 		if ((ret = av_dict_parse_string(&dictionary, codecOptions.c_str(), "=", ",", 0)) < 0)
 		{
-			av_log(NULL, AV_LOG_ERROR, "Unable to parse encoder configuration: %s\n", codecOptions.c_str());
+			vkLogError("Unable to parse encoder configuration: %s", codecOptions.c_str());
 			return ret;
 		}
 
 		// Set the logfile for multi-pass encodes to a file in the temp directory
-		if (encoderContext->codecContext->codec_type == AVMEDIA_TYPE_VIDEO)
+		if (encoderContext->codecContext->codec_type == AVMEDIA_TYPE_VIDEO &&
+			exportInfo.passes > 1)
 		{
-			char charPath[MAX_PATH];
-			if (GetTempPathA(MAX_PATH, charPath))
+			if (codecId == "libx265")
 			{
-				strcat_s(charPath, "voukoder-passlogfile");
-				av_dict_set(&dictionary, "passlogfile", charPath, 0);
+				wxString params;
+				AVDictionaryEntry *entry = av_dict_get(dictionary, "x265-params", NULL, 0);
+				if (entry != NULL)
+				{
+					params = wxString::Format("%s:stats='%s':pass=%d", entry->value, passLogFile, pass);
+				}
+				else
+				{
+					params = wxString::Format("stats='%s':pass=%d", passLogFile, pass);
+				}
+
+				av_dict_set(&dictionary, "x265-params", params, 0);
 			}
 			else
 			{
-				av_log(NULL, AV_LOG_WARNING, "System call failed: GetTempPathA()\n");
+				av_dict_set(&dictionary, "passlogfile", passLogFile, 0);
 			}
 		}
 
@@ -138,7 +162,7 @@ int EncoderEngine::openCodec(const string codecId, const string codecOptions, En
 		}
 		else
 		{
-			av_log(NULL, AV_LOG_WARNING, "[EncodingEngine::openCodec] Failed opening codec: %s\n", codecId.c_str());
+			vkLogError("Failed opening codec: %s", codecId.c_str());
 		}
 	}
 
@@ -238,7 +262,7 @@ int EncoderEngine::getCodecFlags(const AVMediaType type)
 
 void EncoderEngine::finalize()
 {
-	av_log(NULL, AV_LOG_INFO, "Flushing encoders and finalizing ...\n");
+	vkLogInfo("Flushing encoders and finalizing ...");
 
 	if (exportInfo.video.enabled)
 	{
@@ -250,16 +274,16 @@ void EncoderEngine::finalize()
 		flushContext(&audioContext);
 	}
 
-	av_log(NULL, AV_LOG_INFO, "Video and audio buffers flushed.\n");
+	vkLogInfo("Video and audio buffers flushed.");
 
 	int ret = 0;
 	if ((ret = av_write_trailer(formatContext)) < 0)
 	{
-		av_log(NULL, AV_LOG_INFO, "Unable to write trailer. (Return code: %d)\n", ret);
+		vkLogError("Unable to write trailer. (Return code: %d)", ret);
 		return;
 	}
 
-	av_log(NULL, AV_LOG_INFO, "Trailer has been written.\n");
+	vkLogInfo("Trailer has been written.");
 
 	// Save stats data from first pass
 	if (exportInfo.video.enabled && exportInfo.video.id != "libx264")
@@ -280,7 +304,7 @@ void EncoderEngine::finalize()
 
 void EncoderEngine::close()
 {
-	av_log(NULL, AV_LOG_INFO, "Closing encoders ...\n");
+	vkLogInfo("Closing encoders ...");
 
 	// Free video context
 	if (videoContext.codecContext != NULL)
@@ -297,8 +321,6 @@ void EncoderEngine::close()
 	avio_close(formatContext->pb);
 
 	avformat_free_context(formatContext);
-
-	av_log(NULL, AV_LOG_INFO, "### EXPORT FINISHED ###\n");
 }
 
 AVMediaType EncoderEngine::getNextFrameType()
@@ -503,7 +525,7 @@ int EncoderEngine::receivePackets(AVCodecContext *codecContext, AVStream *stream
 		}
 		else if (ret < 0)
 		{
-			av_log(NULL, AV_LOG_WARNING, "Encoding packet failed (Code: %d)\n", ret);
+			vkLogError("Encoding packet failed (Code: %d)", ret);
 			return ret;
 		}
 
@@ -518,7 +540,7 @@ int EncoderEngine::receivePackets(AVCodecContext *codecContext, AVStream *stream
 		// Write packet to disk
 		if (av_interleaved_write_frame(formatContext, packet) < 0)
 		{
-			av_log(NULL, AV_LOG_WARNING, "Unable to write packet to disk.");
+			vkLogError("Unable to write packet to disk.");
 			break;
 		}
 

@@ -17,6 +17,7 @@
 #include "wxPGOptionProperty.h"
 #include "ExportInfo.h"
 #include "wxEncoderConfigEditor.h"
+#include "wxFilterPanel.h"
 
 WX_PG_DECLARE_EDITOR_WITH_DECL(SpinCtrl, WXDLLIMPEXP_PROPGRID)
 
@@ -48,6 +49,13 @@ protected:
 	wxStaticText* m_genMuxFormatLabel;
 	wxChoice* m_genMuxFormatChoice;
 	wxCheckBox* m_genMuxFaststartCheck;
+
+	wxPanel* m_genLocPanel;
+	wxPanel* m_genLocFormPanel;
+	wxStaticText* m_genLocFormatLabel;
+	wxChoice* m_genLocLanguageChoice;
+	wxCheckBox* m_genLocAutoLanguageCheck;
+
 	wxPanel* m_generalOtherPanel;
 	wxPanel* m_generalAboutPanel;
 
@@ -61,6 +69,20 @@ protected:
 	wxNotebook* m_audioNotebook;
 	wxPanel* m_audioEditorPanel;
 
+	wxPanel* m_filterCategory;
+	wxNotebook* m_filterNotebook;
+	wxFilterPanel* m_filterPanel;
+
+	wxPanel* m_settingsCategory;
+	wxNotebook* m_settingsNotebook;
+	wxPanel* m_settingsBasicPanel;
+	wxPanel* m_settingsPanel;
+	wxPanel* m_settingsLogPanel;
+	wxTextCtrl* m_generalLogText;
+	wxPanel* m_genLogButtonsPanel;
+	wxButton* m_genLogClear;
+	wxButton* m_genLogCopyToClipboard;
+
 	wxPanel* m_updateCategory;
 	wxNotebook* m_updateNotebook;
 	wxPanel* m_updatePanel;
@@ -69,10 +91,9 @@ protected:
 
 public:
 	wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo);
-	void SetConfiguration(const Configuration *configuration);
+	void SetConfiguration();
 
 private:
-	const Configuration *configuration;
 	ExportInfo& exportInfo;
 	EncoderInfo* GetSelectedEncoder(wxChoice *choice);
 	void UpdateFormats();
@@ -80,4 +101,6 @@ private:
 	void OnAudioEncoderChanged(wxCommandEvent& event);
 	void OnMuxerChanged(wxCommandEvent& event);
 	void OnFaststartChanged(wxCommandEvent& event);
+	void OnOkayClick(wxCommandEvent& event);
+
 };

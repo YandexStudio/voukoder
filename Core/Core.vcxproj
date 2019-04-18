@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -166,9 +166,16 @@
     <ClInclude Include="EncoderContext.h" />
     <ClInclude Include="EncoderUtils.h" />
     <ClInclude Include="ExportInfo.h" />
+    <ClInclude Include="FilterInfo.h" />
+    <ClInclude Include="FilterUtils.h" />
+    <ClInclude Include="OptionResourceUtils.h" />
     <ClInclude Include="FrameFilter.h" />
     <ClInclude Include="Images.h" />
+    <ClInclude Include="InstructionSet.h" />
+    <ClInclude Include="LanguageInfo.h" />
+    <ClInclude Include="LanguageUtils.h" />
     <ClInclude Include="lavf.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="MuxerInfo.h" />
     <ClInclude Include="MuxerUtils.h" />
     <ClInclude Include="NvidiaCustomOptions.h" />
@@ -182,8 +189,9 @@
     <ClInclude Include="ResourceInfo.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Translation.h" />
     <ClInclude Include="Voukoder.h" />
+    <ClInclude Include="wxAddFilterDialog.h" />
+    <ClInclude Include="wxFilterPanel.h" />
     <ClInclude Include="wxVoukoderDialog.h" />
     <ClInclude Include="wxEncoderConfigEditor.h" />
     <ClInclude Include="wxPGOptionProperty.h" />
@@ -191,11 +199,17 @@
   <ItemGroup>
     <ClCompile Include="EncoderEngine.cpp" />
     <ClCompile Include="EncoderUtils.cpp" />
+    <ClCompile Include="FilterUtils.cpp" />
+    <ClCompile Include="OptionResourceUtils.cpp" />
     <ClCompile Include="FrameFilter.cpp" />
+    <ClCompile Include="LanguageUtils.cpp" />
+    <ClCompile Include="Log.cpp" />
     <ClCompile Include="MuxerUtils.cpp" />
     <ClCompile Include="NvidiaCustomOptions.cpp" />
     <ClCompile Include="OptionContainer.cpp" />
     <ClCompile Include="Voukoder.cpp" />
+    <ClCompile Include="wxAddFilterDialog.cpp" />
+    <ClCompile Include="wxFilterPanel.cpp" />
     <ClCompile Include="wxVoukoderDialog.cpp" />
     <ClCompile Include="wxEncoderConfigEditor.cpp" />
     <ClCompile Include="wxPGOptionProperty.cpp" />
@@ -223,11 +237,18 @@
     <None Include="resources\encoders\pcm_s24le.json" />
     <None Include="resources\encoders\pcm_s32le.json" />
     <None Include="resources\encoders\prores_ks.json" />
+    <None Include="resources\muxers\aac.json" />
+    <None Include="resources\muxers\flac.json" />
     <None Include="resources\muxers\mkv.json" />
     <None Include="resources\muxers\mov.json" />
+    <None Include="resources\muxers\mp3.json" />
     <None Include="resources\muxers\mp4.json" />
+    <None Include="resources\muxers\ogg.json" />
+    <None Include="resources\muxers\opus.json" />
+    <None Include="resources\muxers\wav.json" />
     <None Include="resources\muxers\webm.json" />
     <None Include="resources\translations\english.json" />
+    <None Include="resources\translations\german.json" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Core.rc" />

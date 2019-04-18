@@ -2,19 +2,26 @@
 #include "Callback.h"
 #include "EncoderUtils.h"
 #include "MuxerUtils.h"
+#include "FilterUtils.h"
+#include "LanguageUtils.h"
 
-void Voukoder::Init()
+using namespace nlohmann;
+
+Voukoder::Config::Config()
 {
+	// Load translations first
+	LoadResources(GetCurrentModule(), MAKEINTRESOURCE(ID_TRANSLATION));
+
+	// Initialize translation module
+	LanguageUtils::InitTranslation(languageInfos);
+
+	// Load encoder, muxer and filter infos
 	LoadResources(GetCurrentModule(), MAKEINTRESOURCE(ID_ENCODER));
 	LoadResources(GetCurrentModule(), MAKEINTRESOURCE(ID_MUXER));
+	LoadResources(GetCurrentModule(), MAKEINTRESOURCE(ID_FILTER));
 }
 
-const Configuration* Voukoder::GetConfiguration()
-{
-	return &configuration;
-}
-
-BOOL Voukoder::EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)
+BOOL Voukoder::Config::EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)
 {
 	const HRSRC hRes = FindResourceEx(hModule, lpType, lpName, MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL));
 	if (NULL != hRes)
@@ -39,7 +46,7 @@ BOOL Voukoder::EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LON
 					EncoderInfo encoderInfo;
 					if (EncoderUtils::Create(encoderInfo, jsonResource))
 					{
-						configuration.encoderInfos.push_back(encoderInfo);
+						encoderInfos.push_back(encoderInfo);
 					}
 				}
 				else if (lpType == MAKEINTRESOURCE(ID_MUXER))
@@ -47,7 +54,23 @@ BOOL Voukoder::EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LON
 					MuxerInfo muxerInfo;
 					if (MuxerUtils::Create(muxerInfo, jsonResource))
 					{
-						configuration.muxerInfos.push_back(muxerInfo);
+						muxerInfos.push_back(muxerInfo);
+					}
+				}
+				else if (lpType == MAKEINTRESOURCE(ID_FILTER))
+				{
+					FilterInfo filterInfo;
+					if (FilterUtils::Create(filterInfo, jsonResource))
+					{
+						filterInfos.push_back(filterInfo);
+					}
+				}
+				else if (lpType == MAKEINTRESOURCE(ID_TRANSLATION))
+				{
+					LanguageInfo languageInfo;
+					if (LanguageUtils::Create(languageInfo, jsonResource))
+					{
+						languageInfos.push_back(languageInfo);
 					}
 				}
 			}
@@ -62,10 +85,10 @@ BOOL Voukoder::EnumNamesFunc(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LON
 	return TRUE;
 }
 
-bool Voukoder::LoadResources(HMODULE hModule, LPTSTR lpType)
+bool Voukoder::Config::LoadResources(HMODULE hModule, LPTSTR lpType)
 {
 	// Create C conform callback
-	Callback<BOOL(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)>::func = bind(&Voukoder::EnumNamesFunc, this, placeholders::_1, placeholders::_2, placeholders::_3, placeholders::_4);
+	Callback<BOOL(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)>::func = bind(&Voukoder::Config::EnumNamesFunc, this, placeholders::_1, placeholders::_2, placeholders::_3, placeholders::_4);
 
 	return EnumResourceNames(hModule, lpType, static_cast<ENUMRESNAMEPROC>(Callback<BOOL(HMODULE hModule, LPCTSTR lpType, LPTSTR lpName, LONG_PTR lParam)>::callback), NULL);
 }

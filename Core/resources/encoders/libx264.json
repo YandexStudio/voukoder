@@ -75,22 +75,148 @@
             "selectedIndex": 0,
             "items": [
               {
-                "value": "yuv420p"
+                "value": "yuv420p",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": true
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": false
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
-                "value": "yuv422p"
+                "value": "yuv422p",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": true
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": false
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
-                "value": "yuv444p"
+                "value": "yuv444p",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": true
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
-                "value": "yuv420p10le"
+                "value": "yuv420p10le",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": true
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": false
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
-                "value": "yuv422p10le"
+                "value": "yuv422p10le",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": true
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": false
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
-                "value": "yuv444p10le"
+                "value": "yuv444p10le",
+                "filters": [
+                  {
+                    "filter": "OnSelection",
+                    "params": {
+                      "ShowOptions": [
+                        {
+                          "id": "libx264.standard.profile420",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile422",
+                          "visible": false
+                        },
+                        {
+                          "id": "libx264.standard.profile444",
+                          "visible": true
+                        }
+                      ]
+                    }
+                  }
+                ]
               }
             ]
           }
@@ -142,10 +268,10 @@
           }
         },
         {
-          "id": "libx264.standard.profile",
+          "id": "libx264.standard.profile420",
           "parameter": "profile",
           "control": {
-            "selectedIndex": 0,
+            "selectedIndex": 1,
             "type": "combobox",
             "items": [
               {
@@ -156,10 +282,30 @@
               },
               {
                 "value": "high"
-              },
+              }
+            ]
+          }
+        },
+        {
+          "id": "libx264.standard.profile422",
+          "parameter": "profile",
+          "control": {
+            "selectedIndex": 0,
+            "type": "combobox",
+            "items": [
               {
                 "value": "high422"
-              },
+              }
+            ]
+          }
+        },
+        {
+          "id": "libx264.standard.profile444",
+          "parameter": "profile",
+          "control": {
+            "selectedIndex": 0,
+            "type": "combobox",
+            "items": [
               {
                 "value": "high444"
               }
@@ -254,12 +400,13 @@
         },
         {
           "id": "libx264.standard.strategy",
-          "parameter": "qp",
+          "parameter": "rc",
           "control": {
             "type": "combobox",
             "selectedIndex": 1,
             "items": [
               {
+                "value": "abr",
                 "filters": [
                   {
                     "filter": "OnSelection",
@@ -291,6 +438,7 @@
                 ]
               },
               {
+                "value": "crf",
                 "filters": [
                   {
                     "filter": "OnSelection",
@@ -322,6 +470,7 @@
                 ]
               },
               {
+                "value": "cqp",
                 "filters": [
                   {
                     "filter": "OnSelection",
@@ -346,38 +495,6 @@
                         {
                           "id": "libx264.standard.strategy.qp",
                           "visible": true
-                        }
-                      ]
-                    }
-                  }
-                ]
-              },
-              {
-                "value": "0",
-                "filters": [
-                  {
-                    "filter": "OnSelection",
-                    "params": {
-                      "ShowOptions": [
-                        {
-                          "id": "libx264.standard.strategy.bitrate",
-                          "visible": false
-                        },
-                        {
-                          "id": "libx264.standard.strategy.multipass",
-                          "visible": false
-                        },
-                        {
-                          "id": "libx264.standard.strategy.slowfirstpass",
-                          "visible": false
-                        },
-                        {
-                          "id": "libx264.standard.strategy.crf",
-                          "visible": false
-                        },
-                        {
-                          "id": "libx264.standard.strategy.qp",
-                          "visible": false
                         }
                       ]
                     }
@@ -426,7 +543,7 @@
           "parameter": "crf",
           "control": {
             "type": "float",
-            "minimum": 1.0,
+            "minimum": 0.0,
             "maximum": 51.0,
             "singleStep": 0.1,
             "value": 23.0
@@ -437,7 +554,7 @@
           "parameter": "qp",
           "control": {
             "type": "integer",
-            "minimum": 1,
+            "minimum": 0,
             "maximum": 69,
             "singleStep": 1,
             "value": 23

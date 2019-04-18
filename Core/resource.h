@@ -32,17 +32,18 @@
 #define IDR_MUX_MOV                     201
 #define IDR_MUX_MP4                     202
 #define IDR_MUX_WEBM                    203
+#define IDR_MUX_MP3                     204
+#define IDR_MUX_OPUS                    205
+#define IDR_MUX_OGG                     206
+#define IDR_MUX_FLAC                    207
+#define IDR_MUX_AAC                     208
+#define IDR_MUX_WAV                     209
 #define ID_TRANSLATION                  300
 #define IDR_TRANS_EN                    301
-#define IDD_DIALOG1                     426
-#define IDD_DIA                         427
-#define IDC_TAB1                        1017
-#define IDC_STATIC1                     1029
-#define IDC_MFCPROPERTYGRID1            1030
-#define IDC_PROP_PREVIEW                1033
-#define IDC_PROP_GRID                   1034
-#define IDC_BUTTON1                     1035
-#define IDRESET                         1036
+#define IDR_TRANS_DE                    302
+#define ID_FILTER                       400
+#define IDR_FLT_ZSCALE                  401
+
 
 // Next default values for new objects
 // 
