@@ -138,6 +138,9 @@
     <ClInclude Include="Version.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="EncoderOptionPresets.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FrameFilter.cpp">
@@ -293,6 +296,9 @@
       <Filter>Ressourcendateien\Translations</Filter>
     </None>
     <None Include="resources\translations\french.json">
+      <Filter>Ressourcendateien\Translations</Filter>
+    </None>
+    <None Include="resources\translations\chinese.json">
       <Filter>Ressourcendateien\Translations</Filter>
     </None>
   </ItemGroup>
