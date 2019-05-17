@@ -118,6 +118,7 @@
     "ui.addfilter.options": "Options",
     "ui.addfilter.buttonOkay": "&Oui",
     "ui.addfilter.buttonCancel": "&Annuler",
+    "ui.editfilter.title": "Edit filter",
 
     "prores_ks.standard": "Standard",
     "prores_ks.standard.profile._label": "Profile",
@@ -1210,11 +1211,11 @@
     "libfdk_aac.standard.strategy.b._item_8": "512 Kbits/s",
     "libfdk_aac.standard.strategy.vbr._label": "Débit par canal ",
     "libfdk_aac.standard.strategy.vbr._description": "Définit le mode VBR, de 1 à 5. 1 est la qualité la plus basse (bien que cela reste assez bon) et 5 est la plus haute qualité. Une valeur de 0 désactivera le VBR et le CBR (débit binaire constant) sera activé. A l'heure actuelle, seul le profil aac_low prend en charge le codage VBR.",
-    "libfdk_aac.standard.strategy.vbr._item_0": "32 Kbits/canal",
-    "libfdk_aac.standard.strategy.vbr._item_1": "40 Kbits/canal",
-    "libfdk_aac.standard.strategy.vbr._item_2": "48-56 Kbits/canal",
+    "libfdk_aac.standard.strategy.vbr._item_0": "20 Kbits/canal",
+    "libfdk_aac.standard.strategy.vbr._item_1": "32 Kbits/Canal",
+    "libfdk_aac.standard.strategy.vbr._item_2": "48 Kbits/canal",
     "libfdk_aac.standard.strategy.vbr._item_3": "64 Kbits/canal",
-    "libfdk_aac.standard.strategy.vbr._item_4": "environ 80-96 Kbits/canal",
+    "libfdk_aac.standard.strategy.vbr._item_4": "96 Kbits/canal (pas de limite)",
     "libfdk_aac.standard.profile._label": "Profile",
     "libfdk_aac.standard.profile._description": "Définir le profil audio.",
     "libfdk_aac.standard.profile._item_0": "Faible complexité AAC (LC)",
@@ -1336,21 +1337,6 @@
     "pcm.standard.sampleFormat._description": "Débit constant.",
     "pcm.standard.sampleFormat._item_0": "PCM 16 bit",
     "pcm.standard.sampleFormat._item_1": "PCM 24 bit",
-    "pcm.standard.sampleFormat._item_2": "PCM 32 bit",
-
-    "filter.zscale": "",
-    "filter.zscale.standard": "",
-    "filter.zscale.standard.format._label": "",
-    "filter.zscale.standard.format._description": "",
-    "filter.zscale.standard.format._item_0": "",
-    "filter.zscale.standard.format._item_1": "",
-    "filter.zscale.standard.format._item_2": "",
-    "filter.zscale.standard.format._item_3": "",
-    "filter.zscale.standard.format._item_4": "",
-    "filter.zscale.standard.format._item_5": "",
-    "filter.zscale.standard.width._label": "",
-    "filter.zscale.standard.width._description": "",
-    "filter.zscale.standard.height._label": "",
-    "filter.zscale.standard.height._description": ""
+    "pcm.standard.sampleFormat._item_2": "PCM 32 bit"
   }
 }

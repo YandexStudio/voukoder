@@ -33,7 +33,6 @@ wxVoukoderDialog::wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo) :
 		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_HOME));
 		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_VIDEO));
 		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_AUDIO));
-		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_FILTER));
 		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_SETTINGS));
 		m_listbook1Images->Add(wxBITMAP_PNG_FROM_DATA(IMG_ICON_UPDATE));
 	}
@@ -227,6 +226,10 @@ wxVoukoderDialog::wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo) :
 		m_videoNotebook->AddPage(m_videoEditorPanel, Trans("ui.encoderconfig.tabs.editor"), true);
 		bVideoCategorySizer->Add(m_videoNotebook, 1, wxEXPAND | wxALL, 0);
 
+		m_videoFilterPanel = new wxFilterPanel(m_videoNotebook, AVMEDIA_TYPE_VIDEO);
+		m_videoFilterPanel->SetFilterConfig(exportInfo.video.filters);
+		m_videoNotebook->AddPage(m_videoFilterPanel, Trans("ui.encoderconfig.filters"), false);
+
 		m_videoCategory->SetSizer(bVideoCategorySizer);
 		m_videoCategory->Layout();
 		bVideoCategorySizer->Fit(m_videoCategory);
@@ -254,31 +257,16 @@ wxVoukoderDialog::wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo) :
 		m_audioNotebook->AddPage(m_audioEditorPanel, Trans("ui.encoderconfig.tabs.editor"), true);
 		bAudioCategorySizer->Add(m_audioNotebook, 1, wxEXPAND | wxALL, 0);
 
+		m_audioFilterPanel = new wxFilterPanel(m_audioNotebook, AVMEDIA_TYPE_AUDIO);
+		m_audioFilterPanel->SetFilterConfig(exportInfo.audio.filters);
+		m_audioNotebook->AddPage(m_audioFilterPanel, Trans("ui.encoderconfig.filters"), false);
+
 		m_audioCategory->SetSizer(bAudioCategorySizer);
 		m_audioCategory->Layout();
 		bAudioCategorySizer->Fit(m_audioCategory);
 		m_Categories->AddPage(m_audioCategory, Trans("ui.encoderconfig.audio"), false);
 		m_Categories->SetPageImage(imageIdx++, 2);
 	}
-
-	// Filters
-
-	/*
-	m_filterCategory = new wxPanel(m_Categories, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL);
-	wxBoxSizer* bFilterCategorySizer = new wxBoxSizer(wxVERTICAL);
-
-	m_filterNotebook = new wxNotebook(m_filterCategory, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0);
-	m_filterPanel = new wxFilterPanel(m_filterNotebook);
-	m_filterNotebook->AddPage(m_filterPanel, Trans("ui.encoderconfig.filters"), false);
-
-	bFilterCategorySizer->Add(m_filterNotebook, 1, wxEXPAND | wxALL, 0);
-	   
-	m_filterCategory->SetSizer(bFilterCategorySizer);
-	m_filterCategory->Layout();
-	bFilterCategorySizer->Fit(m_filterCategory);
-	m_Categories->AddPage(m_filterCategory, Trans("ui.encoderconfig.filters"), false);
-	m_Categories->SetPageImage(imageIdx++, 3);
-	*/
 
 	// Settings
 
@@ -371,7 +359,7 @@ wxVoukoderDialog::wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo) :
 	m_settingsCategory->Layout();
 	bSettingsCategorySizer->Fit(m_settingsCategory);
 	m_Categories->AddPage(m_settingsCategory, Trans("ui.encoderconfig.settings"), false);
-	m_Categories->SetPageImage(imageIdx++, 4);
+	m_Categories->SetPageImage(imageIdx++, 3);
 
 	// Set current version
 	Version curVersion;
@@ -419,7 +407,7 @@ wxVoukoderDialog::wxVoukoderDialog(wxWindow *parent, ExportInfo &exportInfo) :
 		m_updateCategory->Layout();
 		bUpdateCategorySizer->Fit(m_updateCategory);
 		m_Categories->AddPage(m_updateCategory, Trans("ui.encoderconfig.update"), false);
-		m_Categories->SetPageImage(imageIdx++, 5);
+		m_Categories->SetPageImage(imageIdx++, 4);
 	}
 
 	//
@@ -680,10 +668,13 @@ void wxVoukoderDialog::OnFaststartChanged(wxCommandEvent& event)
 
 void wxVoukoderDialog::OnOkayClick(wxCommandEvent& event)
 {
+	// Store language setting
 	LanguageInfo *languageInfo = reinterpret_cast<LanguageInfo*>(m_genLocLanguageChoice->GetClientData(m_genLocLanguageChoice->GetSelection()));
 	LanguageUtils::StoreLanguageId(languageInfo->langId);
 
-	//m_filterPanel->GetFilterConfig(exportInfo.video.filters);
+	// Filters
+	m_videoFilterPanel->GetFilterConfig(exportInfo.video.filters);
+	m_audioFilterPanel->GetFilterConfig(exportInfo.audio.filters);
 
 	EndDialog(wxID_OK);
 }

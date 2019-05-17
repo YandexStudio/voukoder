@@ -3,10 +3,12 @@
 #include <vector>
 #include "ResourceInfo.h"
 #include "EncoderGroupInfo.h"
-
-using namespace std;
+#include "OptionContainer.h"
+#include "lavf.h"
 
 struct FilterInfo : public ResourceInfo
 {
-	vector<EncoderGroupInfo> groups;
+	AVMediaType type;
+	OptionContainer defaults;
+	std::vector<EncoderGroupInfo> groups;
 };
