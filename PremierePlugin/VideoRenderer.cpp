@@ -1,7 +1,9 @@
 #include <tmmintrin.h>
 #include <immintrin.h>
 #include "VideoRenderer.h"
+#ifdef _WIN32
 #include <InstructionSet.h>
+#endif
 #include <Voukoder.h>
 #include <Log.h>
 
@@ -26,7 +28,7 @@ static const __m128 scale_add = _mm_setr_ps(
 	0.0f
 );
 
-VideoRenderer::VideoRenderer(csSDK_uint32 pluginId, csSDK_uint32 width, csSDK_uint32 height, bool maxDepth, PrSuites *suites, std::function<bool(AVFrame *frame, int pass, int render, int process)> callback):
+VideoRenderer::VideoRenderer(csSDK_uint32 pluginId, csSDK_uint32 width, csSDK_uint32 height, bool maxDepth, PrSuites *suites, std::function<bool(AVFrame *frame, int pass, int render, int process)> callback) :
 	suites(suites),
 	pluginId(pluginId),
 	width(width),
@@ -85,8 +87,11 @@ int VideoRenderer::createFrameFromBuffer(const float* pixels, AVFrame &frame)
 	int ret = av_frame_get_buffer(&frame, av_cpu_max_align());
 	if (!ret)
 	{
+#ifdef _WIN32
 		const bool useFMA = InstructionSet::FMA();
-
+#else
+		const bool useFMA = true;
+#endif
 		int q = 0;
 		for (int r = height - 1; r >= 0; r--)
 		{
@@ -171,16 +176,19 @@ prSuiteError VideoRenderer::frameCompleteCallback(const csSDK_uint32 pass, const
 		currentPass = pass;
 		pts = 0;
 	}
-	
+
 	// Create frame to store the data
 	AVFrame *frame = av_frame_alloc();
 	frame->width = width;
 	frame->height = height;
 	frame->color_range = AVColorRange::AVCOL_RANGE_MPEG;
 
-	// Get pixel format
-	PrPixelFormat format;
-	suites->ppixSuite->GetPixelFormat(renderedFrame, &format);
+	// Get pixel format from the first frame
+	if (format == PrPixelFormat_Any)
+	{
+		// Get pixel format
+		suites->ppixSuite->GetPixelFormat(renderedFrame, &format);
+	}
 
 	// yuv420p
 	if (format == PrPixelFormat_YUV_420_MPEG4_FRAME_PICTURE_PLANAR_8u_601 ||
@@ -193,7 +201,7 @@ prSuiteError VideoRenderer::frameCompleteCallback(const csSDK_uint32 pass, const
 		format == PrPixelFormat_YUV_420_MPEG4_FIELD_PICTURE_PLANAR_8u_709_FullRange)
 	{
 		frame->format = AV_PIX_FMT_YUV420P;
-		
+
 		// Get plane buffers
 		suites->ppix2Suite->GetYUV420PlanarBuffers(renderedFrame, PrPPixBufferAccess_ReadOnly,
 			(char**)&frame->data[0], (uint32_t*)&frame->linesize[0],
@@ -231,7 +239,7 @@ prSuiteError VideoRenderer::frameCompleteCallback(const csSDK_uint32 pass, const
 			frame->format = AV_PIX_FMT_UYVY422;
 			frame->data[0] = (uint8_t*)pixels;
 			frame->linesize[0] = rowBytes;
-			
+
 			// Color space
 			setColorSpace709(frame, format == PrPixelFormat_UYVY_422_8u_709);
 		}
@@ -321,7 +329,7 @@ PrPixelFormat VideoRenderer::GetTargetRenderFormat(ExportInfo encoderInfo)
 		return encoderInfo.video.colorSpace == AVColorSpace::AVCOL_SPC_BT709 ? PrPixelFormat_VUYX_4444_32f_709 : PrPixelFormat_VUYX_4444_32f;
 	}
 
-	vkLogInfo("Requesting pixel format: %s", av_get_pix_fmt_name(encoderInfo.video.pixelFormat));
+	vkLogInfoVA("Requesting pixel format: %s", av_get_pix_fmt_name(encoderInfo.video.pixelFormat));
 
 	if (encoderInfo.video.pixelFormat == AV_PIX_FMT_YUV420P ||
 		encoderInfo.video.pixelFormat == AV_PIX_FMT_NV12 ||

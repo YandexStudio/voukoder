@@ -1,5 +1,7 @@
 #include "Log.h"
-#include <intrin.h>  
+#ifdef _WIN32
+#include <intrin.h>
+#endif
 #include "Version.h"
 
 Log* Log::instance()
@@ -17,8 +19,8 @@ Log::Log()
 		VKDR_VERSION_PATCH));
 
 	AddLine("by Daniel Stankewitz");
-	AddLine("---------------------------------------------");
-
+	AddSep();
+#ifdef _WIN32
 	int CPUInfo[4] = { -1 };
 	unsigned   nExIds, i = 0;
 	char name[0x40];
@@ -56,13 +58,18 @@ Log::Log()
 	while (EnumDisplayDevices(NULL, nDeviceIndex, &DispDev, 0))
 	{
 		if (DispDev.StateFlags & DISPLAY_DEVICE_ACTIVE)
-			AddLine(wxString::Format("GPU #%d: %S", 
+			AddLine(wxString::Format("Display #%d on: %S",
 				gpu++,
 				DispDev.DeviceString));
 
 		nDeviceIndex++;
 	}
+#endif
+	AddSep();
+}
 
+void Log::AddSep()
+{
 	AddLine("---------------------------------------------");
 }
 

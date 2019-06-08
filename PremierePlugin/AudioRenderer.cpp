@@ -1,6 +1,7 @@
 #include "AudioRenderer.h"
+#include <Log.h>
 
-AudioRenderer::AudioRenderer(const csSDK_uint32 pluginId, const PrTime startTime, const PrTime endTime, csSDK_uint32 chunkSize, ExportInfo encoderInfo, PrSuites *suites):
+AudioRenderer::AudioRenderer(const csSDK_uint32 pluginId, const PrTime startTime, const PrTime endTime, csSDK_uint32 chunkSize, ExportInfo encoderInfo, PrSuites *suites) :
 	pluginId(pluginId),
 	chunkSize(chunkSize),
 	channelLayout(encoderInfo.audio.channelLayout),
@@ -15,7 +16,7 @@ AudioRenderer::AudioRenderer(const csSDK_uint32 pluginId, const PrTime startTime
 
 	// Create high precision audio renderer
 	suites->sequenceAudioSuite->MakeAudioRenderer(pluginId, startTime, GetChannelType(), kPrAudioSampleType_32BitFloat, encoderInfo.audio.timebase.den, &rendererId);
-	
+
 	// Get max. chunk size
 	suites->sequenceAudioSuite->GetMaxBlip(rendererId, encoderInfo.video.ticksPerFrame, &maxChunkSize);
 
@@ -25,7 +26,7 @@ AudioRenderer::AudioRenderer(const csSDK_uint32 pluginId, const PrTime startTime
 }
 
 AudioRenderer::~AudioRenderer()
-{	
+{
 	// Free audio buffers
 	for (int i = 0; i < numChannels; i++)
 		av_free(buffer[i]);
@@ -54,7 +55,7 @@ int AudioRenderer::GetNextFrame(AVFrame &frame)
 		// Reserve buffer
 		if (av_frame_get_buffer(&frame, av_cpu_max_align()) < 0)
 		{
-			wxLogError("Can not reserve audio buffer!");
+			vkLogError("Can not reserve audio buffer!");
 			return malUnknownError;
 		}
 	}
@@ -75,7 +76,7 @@ int AudioRenderer::GetNextFrame(AVFrame &frame)
 
 		// Get samples from premiere
 		if (pos == 0)
-		{	
+		{
 			// Fill buffer initially
 			suites->sequenceAudioSuite->GetAudio(rendererId, chunk, (float**)frame.data, kPrFalse);
 		}

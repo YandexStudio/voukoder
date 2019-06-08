@@ -105,7 +105,7 @@
           "forced": true,
           "control": {
             "type": "combobox",
-            "selectedIndex": 5,
+            "selectedIndex": 0,
             "items": [
               {
                 "value": "1"
@@ -182,17 +182,6 @@
                 "value": "explicit_hierarchical"
               }
             ]
-          }
-        },
-        {
-          "id": "libfdk_aac.misc.header_period",
-          "parameter": "header_period",
-          "control": {
-            "type": "integer",
-            "maximum": 65535,
-            "minimum": 0,
-            "singleStep": 1,
-            "value": 0
           }
         },
         {
